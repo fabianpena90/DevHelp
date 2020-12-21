@@ -1,3 +1,4 @@
 {
-    "mongoURI": "mongodb+srv://fabian123:fabian123@devhelp.jml05.mongodb.net/DevHelp?retryWrites=true&w=majority"
+    "mongoURI": "mongodb+srv://fabian123:fabian123@devhelp.jml05.mongodb.net/DevHelp?retryWrites=true&w=majority",
+    "secreteMessage": "123456"
 }

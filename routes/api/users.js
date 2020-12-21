@@ -2,8 +2,11 @@ const express = require('express')
 const router = express.Router()
 const gravatar = require('gravatar')
 const bcrypt = require('bcryptjs')
-const { check, validationResult } = require('express-validator/check')
+const jwt = require('jsonwebtoken')
+const config = require('config')
+const { check, validationResult } = require('express-validator')
 const User = require('../../models/User')
+const { json } = require('express')
 
 // POST api/users/
 // Test route
@@ -11,7 +14,7 @@ const User = require('../../models/User')
 router.post('/',[
     check('name', 'Name is required').not().isEmpty(),
     check('email', 'Email is required').isEmail(),
-    check('password', 'Password is required, 6 or more Characters').isLength()
+    check('password', 'Password is required, 6 or more Characters').isLength({min: 6})
 ], async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()) {
@@ -20,7 +23,7 @@ router.post('/',[
     const { name, email, password } = req.body
 
     try{
-        let user = User.findOne({ email })
+        let user = await User.findOne({ email })
     
         if(user) {
             return res.status(400).json({errors: [{ msg: 'User already exists!' }]})
@@ -45,16 +48,27 @@ router.post('/',[
 
         await user.save()
 
-        res.send('User registered')
+        const payload = {
+            user: {
+                id: user.id
+            }
+        }
+
+        jwt.sign(
+            payload, 
+            config.get('secreteMessage'), 
+            {expiresIn: '30d'}, 
+            (err, token) => {
+            if(err) throw err;
+            res.json({token})
+        })
 
     } catch(err) {
         console.error(err.message)
-        res.status(500).json({
-            message: "Server Error"
-        })
+        res.status(500).send("Server Error")
     }
+});
 
-    res.send("User route")
-})
+
 
 module.exports = router
