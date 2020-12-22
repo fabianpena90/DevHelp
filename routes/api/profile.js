@@ -13,7 +13,7 @@ router.get("/me", auth, async (req, res) => {
   try {
     const profile = await Profile.findOne({
       user: req.user.id,
-    }).populate("name", ["name", "avatar"]);
+    }).populate("user", ["name", "avatar"]);
 
     if (!profile) {
       return res.status(400).json({
@@ -102,7 +102,7 @@ router.post(
       }
 
       // Create
-      profile = new Profile({ profileFields });
+      profile = new Profile(profileFields);
 
       await profile.save();
 
@@ -110,6 +110,119 @@ router.post(
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Server error");
+    }
+  }
+);
+
+// GET api/profile/
+// Get all profiles
+// Public
+router.get("/", async (req, res) => {
+  try {
+    const profiles = await Profile.find().populate("user", ["name", "avatar"]);
+
+    res.json(profiles);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Eroor");
+  }
+});
+
+// GET api/profile/user/:user_id
+// Get profile by user_id
+// Public
+router.get("/user/:user_id", async (req, res) => {
+  try {
+    const profile = await Profile.findOne({
+      user: req.params.user_id,
+    }).populate("user", ["name", "avatar"]);
+
+    if (!profile) {
+      return res.status(400).json({
+        msg: "Profile not found",
+      });
+    }
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === "ObjectId") {
+      return res.status(400).json({
+        msg: "Profile not found",
+      });
+    }
+    res.status(500).send("Server Error");
+  }
+});
+
+// DELETE api/profile/
+// Delete profile user & posts
+// Private
+router.delete("/", auth, async (req, res) => {
+  try {
+    // Remove users posts
+    // Remove Profile
+    await Profile.findOneAndRemove({ user: req.user.id });
+    // Remove User
+    await User.findOneAndRemove({ _id: req.user.id });
+    res.json({ msg: "User Removed" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Eroor");
+  }
+});
+
+// PUT api/profile/experience
+// Add profile experience
+// Private
+router.put(
+  "/experience",
+  [
+    auth,
+    [
+      check("title", "Title is required").not().isEmpty(),
+      check("company", "Company is required").not().isEmpty(),
+      check("from", "From Date is required").not().isEmpty(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        errors: errors.array(),
+      });
+    }
+
+    const {
+      title,
+      company,
+      location,
+      from,
+      to,
+      current,
+      description,
+    } = req.body;
+
+    const newExp = {
+      title,
+      company,
+      location,
+      from,
+      to,
+      current,
+      description,
+    };
+
+    try {
+      const profile = await Profile.findOne({ user: req.user.id });
+
+      profile.experience.unshift(newExp);
+
+      await profile.save();
+
+      res.json(profile);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server Error");
     }
   }
 );
