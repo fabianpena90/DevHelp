@@ -1,4 +1,6 @@
 {
     "mongoURI": "mongodb+srv://fabian123:fabian123@devhelp.jml05.mongodb.net/DevHelp?retryWrites=true&w=majority",
-    "secreteMessage": "123456"
+    "secreteMessage": "123456",
+    "githubclientid": "0f50761db7b0f937912f",
+    "githubclientsecret": "d5110f09850dc02d1dd64119013f102f5c46dcbd"
 }
