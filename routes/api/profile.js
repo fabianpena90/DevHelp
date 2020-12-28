@@ -337,6 +337,7 @@ router.delete('/education/:edu_id', auth, async (req, res) => {
 // Public
 router.get('/github/:username', async (req, res) => {
   try {
+    // This is how to make a call and use the GitHub API from the backend
     const options = {
       uri: `https://api.github.com/users/${
         req.params.username
