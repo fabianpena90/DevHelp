@@ -5,9 +5,11 @@ import {
   AUTH_ERROR,
   LOGIN_SUCCESS,
   LOGIN_FAIL,
+  LOGOUT,
 } from '../actions/types';
 
 const initialState = {
+  // the token is store in the local storage and to get it we do the following things
   token: localStorage.getItem('token'),
   isAuthenticated: null,
   loading: true,
@@ -20,7 +22,7 @@ export default function (state = initialState, action) {
   switch (type) {
     case REGISTER_SUCCESS:
     case LOGIN_SUCCESS:
-      localStorage.setItem('token', payload.token);
+      localStorage.setItem('token', payload.token); //payload is an object
       return {
         ...state,
         ...payload,
@@ -30,6 +32,7 @@ export default function (state = initialState, action) {
     case REGISTER_FAIL:
     case AUTH_ERROR:
     case LOGIN_FAIL:
+    case LOGOUT:
       localStorage.removeItem('token');
       return {
         ...state,
